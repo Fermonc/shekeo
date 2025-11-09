@@ -41,7 +41,7 @@ async function getServices(userId: string): Promise<Service[]> {
 }
 
 export default async function DashboardPage() {
-  const sessionCookie = cookies().get('session')?.value;
+  const sessionCookie = (await cookies()).get('session')?.value;
   if (!sessionCookie) {
     redirect('/login');
   }
