@@ -1,1 +1,104 @@
-\'use client\';\n\nimport { useState } from \'react\';\nimport Link from \'next/link\';\nimport { useRouter } from \'next/navigation\';\nimport { createUserWithEmailAndPassword } from \'firebase/auth\';\nimport { auth } from \'@/lib/firebase-client\';\nimport { createSession } from \'@/lib/actions\';\n\nexport default function SignUpPage() {\n  const router = useRouter();\n  const [email, setEmail] = useState(\'\');\n  const [password, setPassword] = useState(\'\');\n  const [error, setError] = useState<string | null>(null);\n\n  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {\n    e.preventDefault();\n    setError(null);\n\n    if (password.length < 6) {\n      setError(\'La contraseña debe tener al menos 6 caracteres.\');\n      return;\n    }\n\n    try {\n      const userCredential = await createUserWithEmailAndPassword(auth, email, password);\n      const idToken = await userCredential.user.getIdToken();\n      await createSession(idToken);\n      router.push(\'/dashboard\');\n    } catch (error: any) {\n      console.error(\"Error al registrarse:\", error);\n      if (error.code === \'auth/email-already-in-use\') {\n        setError(\'Este correo electrónico ya está en uso.\');\n      } else if (error.code === \'auth/invalid-email\') {\n        setError(\'El formato del correo electrónico no es válido.\');\n      } else {\n        setError(\'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo.\');\n      }\n    }\n  };\n\n  return (\n    <div className=\"min-h-screen flex items-center justify-center bg-gray-900 text-white\">\n      <div className=\"max-w-md w-full bg-gray-800 p-8 rounded-xl shadow-2xl\">\n        <div className=\"text-center mb-8\">\n          <h1 className=\"text-4xl font-bold text-blue-400\">Nexus</h1>\n          <p className=\"text-gray-400\">Crea tu cuenta para empezar</p>\n        </div>\n\n        {error && (\n          <div className=\"bg-red-500/20 text-red-300 p-3 rounded-md mb-6 text-sm\">\n            {error}\n          </div>\n        )}\n\n        <form onSubmit={handleSignUp} className=\"space-y-6\">\n          <div>\n            <label htmlFor=\"email\" className=\"block text-sm font-medium text-gray-300 mb-2\">Correo Electrónico</label>\n            <input\n              id=\"email\"\n              name=\"email\"\n              type=\"email\"\n              autoComplete=\"email\"\n              required\n              value={email}\n              onChange={(e) => setEmail(e.target.value)}\n              className=\"w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition\"\n            />\n          </div>\n\n          <div>\n            <label htmlFor=\"password\" className=\"block text-sm font-medium text-gray-300 mb-2\">Contraseña</label>\n            <input\n              id=\"password\"\n              name=\"password\"\n              type=\"password\"\n              autoComplete=\"new-password\"\n              required\n              value={password}\n              onChange={(e) => setPassword(e.target.value)}\n              className=\"w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition\"\n            />\n          </div>\n\n          <div>\n            <button\n              type=\"submit\"\n              className=\"w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 transition-transform transform hover:scale-105\"\n            >\n              Crear Cuenta\n            </button>\n          </div>\n        </form>\n\n        <p className=\"mt-8 text-center text-sm text-gray-400\">\n          ¿Ya tienes una cuenta?{\' \}\n          <Link href=\"/login\" className=\"font-medium text-blue-400 hover:text-blue-500\">\n            Inicia sesión aquí\n          </Link>\n        </p>\n      </div>\n    </div>\n  );\n}\n
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase-client';
+import { createSession } from '@/lib/actions';
+
+export default function SignUpPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
+      await createSession(idToken);
+      router.push('/dashboard');
+    } catch (error: any) {
+      console.error("Error al registrarse:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        setError('Este correo electrónico ya está en uso.');
+      } else if (error.code === 'auth/invalid-email') {
+        setError('El formato del correo electrónico no es válido.');
+      } else {
+        setError('Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo.');
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+      <div className="max-w-md w-full bg-gray-800 p-8 rounded-xl shadow-2xl">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-blue-400">Nexus</h1>
+          <p className="text-gray-400">Crea tu cuenta para empezar</p>
+        </div>
+
+        {error && (
+          <div className="bg-red-500/20 text-red-300 p-3 rounded-md mb-6 text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSignUp} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">Correo Electrónico</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">Contraseña</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 transition-transform transform hover:scale-105"
+            >
+              Crear Cuenta
+            </button>
+          </div>
+        </form>
+
+        <p className="mt-8 text-center text-sm text-gray-400">
+          ¿Ya tienes una cuenta?{' '}
+          <Link href="/login" className="font-medium text-blue-400 hover:text-blue-500">
+            Inicia sesión aquí
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
