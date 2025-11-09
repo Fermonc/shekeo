@@ -44,7 +44,7 @@ async function getUserInfo(uid: string): Promise<UserInfo | null> {
 }
 
 export default async function ServiceAgreementPage({ params }: { params: { serviceId: string } }) {
-  const sessionCookie = cookies().get('session')?.value;
+  const sessionCookie = (await cookies()).get('session')?.value;
   if (!sessionCookie) {
     redirect('/login');
   }
