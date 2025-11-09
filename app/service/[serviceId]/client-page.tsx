@@ -3,7 +3,7 @@
 import React from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import Link from 'next/link';
-import { saveAgreementTerms, acceptAgreement } from '@/lib/actions';
+import { type FormState, saveAgreementTerms, acceptAgreement } from '@/lib/actions';
 
 // ... (interfaces remain the same)
 interface ServiceDetails {
@@ -70,7 +70,7 @@ function AgreementTextArea({ agreement, canEdit, onTextChange }: { agreement: st
 export default function AgreementClientPage({ service, currentUser, creator, participant }: AgreementClientPageProps) {
   
   const [agreementText, setAgreementText] = React.useState(service.agreement || '');
-  const initialState = { message: "" };
+  const initialState: FormState = { message: "" };
   const [saveState, saveDispatch] = useFormState(saveAgreementTerms, initialState);
   const [acceptState, acceptDispatch] = useFormState(acceptAgreement, initialState);
 
@@ -138,7 +138,7 @@ export default function AgreementClientPage({ service, currentUser, creator, par
             {canAcceptAgreement && (
                 <form action={acceptDispatch} className="mt-6 flex justify-end items-center gap-4">
                     <input type="hidden" name="serviceId" value={service.id} />
-                    {acceptState.message && <p className={`text-sm ${acceptState.error ? 'text-red-400' : 'text-red-400'}`}>{acceptState.message}</p>}
+                    {acceptState.message && <p className={`text-sm ${acceptState.error ? 'text-red-400' : 'text-green-400'}`}>{acceptState.message}</p>}
                     <AcceptButton />
                 </form>
             )}
