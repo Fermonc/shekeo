@@ -47,7 +47,7 @@ export async function handleResetPassword(prevState: FormState, formData: FormDa
 }
 
 export async function createService(prevState: { message: string }, formData: FormData) {
-  const sessionCookie = cookies().get('session')?.value;
+  const sessionCookie = (await cookies()).get('session')?.value;
   if (!sessionCookie) {
     redirect('/login');
   }
@@ -84,7 +84,7 @@ export async function createService(prevState: { message: string }, formData: Fo
 }
 
 export async function joinService(prevState: { message: string }, formData: FormData) {
-  const sessionCookie = cookies().get('session')?.value;
+  const sessionCookie = (await cookies()).get('session')?.value;
   if (!sessionCookie) {
     redirect('/login');
   }
@@ -132,7 +132,7 @@ export async function joinService(prevState: { message: string }, formData: Form
 }
 
 export async function saveAgreementTerms(prevState: { message: string }, formData: FormData) {
-  const sessionCookie = cookies().get('session')?.value;
+  const sessionCookie = (await cookies()).get('session')?.value;
   if (!sessionCookie) {
     redirect('/login');
   }
@@ -181,5 +181,52 @@ export async function saveAgreementTerms(prevState: { message: string }, formDat
   } catch (error) {
     console.error("Error guardando el acuerdo:", error);
     return { message: 'Error al guardar los términos. Por favor, inténtalo de nuevo.', error: true };
+  }
+}
+
+export async function acceptAgreement(prevState: { message: string }, formData: FormData) {
+  const sessionCookie = (await cookies()).get('session')?.value;
+  if (!sessionCookie) {
+    redirect('/login');
+  }
+
+  const serviceId = formData.get('serviceId') as string;
+  if (!serviceId) {
+    return { message: 'ID de servicio no encontrado.', error: true };
+  }
+
+  try {
+    const decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const participantId = decodedToken.uid;
+
+    const serviceRef = adminDb.collection('services').doc(serviceId);
+    const serviceDoc = await serviceRef.get();
+
+    if (!serviceDoc.exists) {
+      return { message: 'Este servicio ya no existe.', error: true };
+    }
+
+    const serviceData = serviceDoc.data()!;
+
+    // Verify the user is the participant
+    if (serviceData.participantId !== participantId) {
+      return { message: 'No tienes permiso para aceptar este acuerdo.', error: true };
+    }
+
+    // Verify the service is pending agreement
+    if (serviceData.status !== 'pending_agreement') {
+      return { message: 'Este acuerdo no se puede aceptar en su estado actual.', error: true };
+    }
+
+    await serviceRef.update({
+      status: 'active',
+    });
+
+    revalidatePath(`/service/${serviceId}`);
+    return { message: '¡Acuerdo aceptado! El servicio está ahora activo.' };
+
+  } catch (error) {
+    console.error("Error al aceptar el acuerdo:", error);
+    return { message: 'Error al aceptar el acuerdo. Por favor, inténtalo de nuevo.', error: true };
   }
 }
